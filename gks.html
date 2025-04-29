@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Coin Gamble Game</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #coinLabel {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    #result {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    img {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="coinLabel">Coins: 0</div>
+  <div id="powerLabel">Storage Power: 1</div>
+  <img id="gambleButton" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Kiloware.JPG/960px-Kiloware.JPG" alt="Gamble">
+  <div id="result"></div>
+
+  <button onclick="claimCoins()">Claim</button>
+  <div id="claimStatus"></div>
+
+  <button onclick="upgradePower()">Upgrade Wallet</button>
+
+  <script>
+    const CLAIM_INTERVAL = 3600000; // 1 hour
+    const CLAIM_MAX_STORAGE = 45671000000;
+    const STORAGE_TIERS = [
+      { power: 1, max: 78000000, cost: 0 },
+      { power: 2, max: 95000000, cost: 1000000 },
+      { power: 3, max: 5000000000, cost: 34000000 },
+      { power: 4, max: 29000000000, cost: 80000000 }
+    ];
+
+    let coins = parseInt(localStorage.getItem('coins')) || 0;
+    let powerLevel = parseInt(localStorage.getItem('power')) || 1;
+    let freeRolls = parseInt(localStorage.getItem('freeRolls')) || 0;
+    let claimStored = parseInt(localStorage.getItem('claimStored')) || 0;
+    let lastClaim = parseInt(localStorage.getItem('lastClaim')) || Date.now();
+    let lastPlay = parseInt(localStorage.getItem('lastPlay')) || 0;
+
+    function updateUI() {
+      document.getElementById('coinLabel').innerText = `Coins: ${coins}`;
+      document.getElementById('powerLabel').innerText = `Storage Power: ${powerLevel}`;
+      document.getElementById('claimStatus').innerText = `Claim Storage: ${claimStored}`;
+    }
+
+    function saveState() {
+      localStorage.setItem('coins', coins);
+      localStorage.setItem('power', powerLevel);
+      localStorage.setItem('freeRolls', freeRolls);
+      localStorage.setItem('claimStored', claimStored);
+      localStorage.setItem('lastClaim', lastClaim);
+      localStorage.setItem('lastPlay', lastPlay);
+    }
+
+    function gamble() {
+      const currentPower = STORAGE_TIERS.find(t => t.power === powerLevel);
+      if (coins < 7 && freeRolls <= 0) {
+        document.getElementById('result').innerText = "Not enough coins or free rolls!";
+        return;
+      }
+
+      if (freeRolls > 0) {
+        freeRolls--;
+      } else {
+        coins -= 7;
+      }
+
+      const outcome = [50, -200, 10][Math.floor(Math.random() * 3)];
+      coins += outcome;
+      coins = Math.min(coins, currentPower.max);
+
+      lastPlay = Date.now();
+      document.getElementById('result').innerText = `You ${outcome >= 0 ? 'won' : 'lost'} ${Math.abs(outcome)} coins!`;
+
+      saveState();
+      updateUI();
+    }
+
+    function claimCoins() {
+      const now = Date.now();
+      const hoursPassed = Math.floor((now - lastClaim) / CLAIM_INTERVAL);
+      let newCoins = 0;
+
+      for (let i = 0; i < hoursPassed; i++) {
+        newCoins += [2, 3, 5][Math.floor(Math.random() * 3)];
+      }
+
+      claimStored += newCoins;
+      claimStored = Math.min(claimStored, CLAIM_MAX_STORAGE);
+
+      const currentPower = STORAGE_TIERS.find(t => t.power === powerLevel);
+      const spaceLeft = currentPower.max - coins;
+      const transfer = Math.min(claimStored, spaceLeft);
+      coins += transfer;
+      claimStored -= transfer;
+
+      lastClaim = now;
+
+      saveState();
+      updateUI();
+    }
+
+    function upgradePower() {
+      const current = STORAGE_TIERS.find(t => t.power === powerLevel);
+      const next = STORAGE_TIERS.find(t => t.power === powerLevel + 1);
+
+      if (!next) {
+        alert("Max power reached!");
+        return;
+      }
+
+      if (coins < next.cost || coins < current.max) {
+        alert("You need more coins or must reach your current max to upgrade!");
+        return;
+      }
+
+      coins -= next.cost;
+      powerLevel = next.power;
+
+      saveState();
+      updateUI();
+    }
+
+    function checkInactivityBonus() {
+      const now = Date.now();
+      const daysPassed = (now - lastPlay) / (1000 * 60 * 60 * 24);
+      if (daysPassed >= 20) {
+        coins += 49;
+        freeRolls += 1;
+        alert("You got +49 coins and 1 free roll for being inactive for 20 days!");
+        lastPlay = now;
+        saveState();
+        updateUI();
+      }
+    }
+
+    document.getElementById('gambleButton').addEventListener('click', gamble);
+    checkInactivityBonus();
+    updateUI();
+  </script>
+</body>
+</html>
