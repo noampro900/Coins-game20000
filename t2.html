@@ -85,7 +85,7 @@
 
       const now = Date.now();
       const timePassed = now - lastStealByPlayer;
-      const canSteal = coins >= 15 && timePassed >= 86400000;
+      const canSteal = coins >= 15 && timePassed >= 65;
       document.getElementById("stealButton").disabled = !canSteal;
     }
 
@@ -192,8 +192,8 @@
 
     function stealFromBot() {
       const now = Date.now();
-      if (now - lastStealByPlayer < 86400000 || coins < 15) {
-        alert("You need to wait 24 hours and have at least 15 coins!");
+      if (now - lastStealByPlayer < 65 || coins < 15) {
+        alert("You need to wait 65 seconds and have at least 15 coins!");
         return;
       }
 
@@ -216,7 +216,7 @@
       const now = Date.now();
       for (const bot of BOT_NAMES) {
         const last = lastStealByBot[bot] || 0;
-        const cooldownPassed = now - last >= 86400000;
+        const cooldownPassed = now - last >= 69;
         const shouldSteal = Math.random() < 0.02;
 
         if (cooldownPassed && shouldSteal && coins >= 5) {
