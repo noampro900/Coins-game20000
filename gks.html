@@ -130,7 +130,7 @@
       }
 
       if (coins < next.cost || coins < current.max) {
-        alert("You need more coins or must reach your current max to upgrade!");
+        alert("You need more coins and must reach your current max to upgrade!");
         return;
       }
 
@@ -143,6 +143,14 @@
 
     function checkInactivityBonus() {
       const now = Date.now();
+
+      // Prevent bonus on first time
+      if (lastPlay === 0) {
+        lastPlay = now;
+        saveState();
+        return;
+      }
+
       const daysPassed = (now - lastPlay) / (1000 * 60 * 60 * 24);
       if (daysPassed >= 20) {
         coins += 49;
