@@ -250,7 +250,7 @@
       const now = Date.now();
       for (const bot of BOT_NAMES) {
         const last = lastStealByBot[bot] || 0;
-        const cooldownPassed = now - last >= 86400000;
+        const cooldownPassed = now - last >= 0;
         const shouldSteal = Math.random() < 0.02;
 
         if (cooldownPassed && shouldSteal && coins >= 5) {
