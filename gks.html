@@ -119,7 +119,7 @@
 
       const now = Date.now();
       const timePassed = now - lastStealByPlayer;
-      const canSteal = coins >= 15 && timePassed >= 50;
+      const canSteal = coins >= 15 && timePassed >= 0;
       document.getElementById("stealButton").disabled = !canSteal;
     }
 
