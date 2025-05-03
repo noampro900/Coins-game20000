@@ -430,7 +430,41 @@ function updateUI() {
   // Display a start button for the dorpo coin collection
   document.getElementById('startButton').style.display = "block";
 }
+function updateBotsByDate() {
+  const now = Date.now();
 
+  const taylioTime = new Date("2025-05-08T00:09:01").getTime();
+  const extraBotsTime = new Date("2025-05-09T00:09:02").getTime();
+
+  // Add taylio if it's time
+  if (now >= taylioTime && !BOT_NAMES.includes("taylio")) {
+    BOT_NAMES.push("taylio");
+    botCoins["taylio"] = botCoins["taylio"] || 90;
+    lastStealByBot["taylio"] = lastStealByBot["taylio"] || 0;
+  }
+
+  // Add 5 extra bots if it's time
+  if (now >= extraBotsTime) {
+    const newBots = {
+      "hh": 5,
+      "407": 29,
+      "royalty88": 3,
+      "oirggr": 80,
+      "pasus": 7
+    };
+    for (const [name, amount] of Object.entries(newBots)) {
+      if (!BOT_NAMES.includes(name)) {
+        BOT_NAMES.push(name);
+        botCoins[name] = botCoins[name] || amount;
+        lastStealByBot[name] = lastStealByBot[name] || 0;
+      }
+    }
+  }
+
+  saveState();
+}
+
+updateBotsByDate();
 
 </script>
 
